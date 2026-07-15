@@ -1,0 +1,441 @@
+openapi: 3.0.3
+info:
+  title: BSKU001 SKU Module API
+  version: 1.0.0
+  description: SKU module with JWT tenant scoping, pagination, filtering, localization, and CRUD APIs.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Page:
+      in: query
+      name: page
+      schema: { type: integer, default: 1 }
+    Limit:
+      in: query
+      name: limit
+      schema: { type: integer, default: 20, maximum: 100 }
+    Search:
+      in: query
+      name: search
+      schema: { type: string }
+    AcceptLanguage:
+      in: header
+      name: Accept-Language
+      schema: { type: string, example: th-TH }
+  schemas:
+    MasterRequest:
+      type: object
+      required: [code, name_th, name_en]
+      properties:
+        code: { type: string }
+        name_th: { type: string }
+        name_en: { type: string }
+        hex_code: { type: string }
+        is_active: { type: boolean }
+    SubCategoryRequest:
+      allOf:
+        - $ref: '#/components/schemas/MasterRequest'
+        - type: object
+          required: [category_id]
+          properties:
+            category_id: { type: string }
+    MerchantFeatureConfigResponse:
+      type: object
+      properties:
+        merchant_id: { type: string }
+        skus: { type: boolean, example: true }
+        brands: { type: boolean, example: false }
+        categories: { type: boolean, example: true }
+        sub_categories: { type: boolean, example: true }
+        materials: { type: boolean, example: false }
+        dimensions: { type: boolean, example: true }
+        images: { type: boolean, example: true }
+        colors: { type: boolean, example: true }
+        sku_options: { type: boolean, example: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    MerchantFeatureConfigUpdateRequest:
+      type: object
+      properties:
+        skus: { type: boolean }
+        brands: { type: boolean }
+        categories: { type: boolean }
+        sub_categories: { type: boolean }
+        materials: { type: boolean }
+        dimensions: { type: boolean }
+        images: { type: boolean }
+        colors: { type: boolean }
+        sku_options: { type: boolean, example: false }
+    SKUSummaryResponse:
+      type: object
+      properties:
+        sum_skus: { type: integer, format: int64, example: 120 }
+        sum_brand: { type: integer, format: int64, example: 8 }
+        sum_categories: { type: integer, format: int64, example: 12 }
+        sum_sub_categories: { type: integer, format: int64, example: 35 }
+        sum_materials: { type: integer, format: int64, example: 16 }
+        sum_colors: { type: integer, format: int64, example: 24 }
+        sum_options: { type: integer, format: int64, example: 10 }
+    SKUOptionValueRequest:
+      type: object
+      required: [code, name_th, name_en]
+      properties:
+        code: { type: string, example: NORMAL }
+        name_th: { type: string, example: ปกติ }
+        name_en: { type: string, example: Normal }
+        price_delta: { type: number, format: double, example: 0.0000 }
+        sort_order: { type: integer, example: 1 }
+        is_default: { type: boolean, example: true }
+        is_active: { type: boolean, example: true }
+    SKUOptionGroupRequest:
+      type: object
+      required: [code, name_th, name_en, selection_type]
+      properties:
+        code: { type: string, example: SWEETNESS }
+        name_th: { type: string, example: ระดับความหวาน }
+        name_en: { type: string, example: Sweetness Level }
+        selection_type: { type: string, enum: [RADIO, CHECKBOX], example: RADIO }
+        is_required: { type: boolean, example: true }
+        min_select: { type: integer, example: 1 }
+        max_select: { type: integer, example: 1 }
+        sort_order: { type: integer, example: 1 }
+        is_active: { type: boolean, example: true }
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/SKUOptionValueRequest' }
+          example:
+            - { code: LESS, name_th: หวานน้อย, name_en: Less Sweet, price_delta: 0.0000, sort_order: 1, is_default: false }
+            - { code: NORMAL, name_th: หวานปกติ, name_en: Normal Sweet, price_delta: 0.0000, sort_order: 2, is_default: true }
+    SKURequest:
+      type: object
+      required: [sku_code, names]
+      properties:
+        sku_code: { type: string, example: APL-IPH15-BLK-256 }
+        gtin: { type: string, example: '8851234567890' }
+        brand_id: { type: string }
+        category_id: { type: string }
+        sub_category_id: { type: string }
+        material_id: { type: string }
+        color_id: { type: string }
+        names:
+          type: object
+          additionalProperties: { type: string }
+          example: { en: iPhone 15 Pro Max 256GB Black, th: ไอโฟน 15 โปร แมกซ์ 256GB สีดำ }
+        descriptions:
+          type: object
+          additionalProperties: { type: string }
+        weight:
+          type: object
+          properties:
+            value: { type: number }
+            unit: { type: string, example: kg }
+        dimensions:
+          type: object
+          properties:
+            width: { type: object, properties: { value: { type: number }, unit: { type: string, example: cm } } }
+            length: { type: object, properties: { value: { type: number }, unit: { type: string, example: cm } } }
+            height: { type: object, properties: { value: { type: number }, unit: { type: string, example: cm } } }
+            hs_code: { type: string, example: '8517.13.00' }
+        status: { type: string, enum: [DRAFT, ACTIVE, DISCONTINUED] }
+        is_hazmat: { type: boolean }
+        country_of_origin: { type: string, example: TH }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              image_url: { type: string }
+              alt_text: { type: string }
+              sort_order: { type: integer }
+              is_primary: { type: boolean }
+paths:
+  /summary:
+    get:
+      tags: [Sumarry]
+      summary: Get SKU module summary for current merchant
+      responses:
+        '200':
+          description: SKU summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    $ref: '#/components/schemas/SKUSummaryResponse'
+  /merchant-config:
+    get:
+      tags: [Merchant Config]
+      summary: Get enabled SKU feature configuration for current merchant
+      description: Returns which SKU sub-services are enabled for the merchant from the JWT merchant_id claim. Missing rows are auto-created with all features enabled.
+      responses:
+        '200':
+          description: Merchant feature config
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    $ref: '#/components/schemas/MerchantFeatureConfigResponse'
+    patch:
+      tags: [Merchant Config]
+      summary: Update enabled SKU feature configuration for current merchant
+      description: Patch only the feature flags sent in the request body. Use `sku_options` to enable or disable radio/checkbox SKU option groups.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MerchantFeatureConfigUpdateRequest' }
+      responses:
+        '200':
+          description: Merchant feature config updated
+  /skus:
+    get:
+      tags: [SKUs]
+      summary: List SKUs with pagination/search/filtering
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - in: query
+          name: brand_id
+          schema: { type: string }
+        - in: query
+          name: category_id
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        '200': { description: SKU page }
+    post:
+      tags: [SKUs]
+      summary: Create SKU
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SKURequest' }
+      responses:
+        '201': { description: SKU created }
+  /skus/{id_or_code}:
+    get:
+      tags: [SKUs]
+      summary: Get SKU by UUID or SKU code
+      parameters:
+        - in: path
+          name: id_or_code
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200': { description: SKU detail }
+  /skus/{id}:
+    put:
+      tags: [SKUs]
+      summary: Replace SKU
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SKURequest' }
+      responses:
+        '200': { description: SKU updated }
+    patch:
+      tags: [SKUs]
+      summary: Patch SKU fields
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SKURequest' }
+      responses:
+        '200': { description: SKU patched }
+    delete:
+      tags: [SKUs]
+      summary: Soft delete SKU by setting is_active=false and status=DISCONTINUED
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: SKU deleted }
+  /brands:
+    get:
+      tags: [Brands]
+      summary: List brands
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Search' }]
+      responses: { '200': { description: Brand page } }
+    post:
+      tags: [Brands]
+      summary: Create brand
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }
+      responses: { '201': { description: Brand created } }
+  /brands/{id}:
+    get: { tags: [Brands], summary: Get brand, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Brand detail } } }
+    put: { tags: [Brands], summary: Update brand, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Brand updated } } }
+    patch: { tags: [Brands], summary: Patch brand, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Brand patched } } }
+    delete: { tags: [Brands], summary: Delete brand, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Brand deleted } } }
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Search' }]
+      responses: { '200': { description: Category page } }
+    post:
+      tags: [Categories]
+      summary: Create category
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }
+      responses: { '201': { description: Category created } }
+  /categories/{id}:
+    get: { tags: [Categories], summary: Get category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Category detail } } }
+    put: { tags: [Categories], summary: Update category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Category updated } } }
+    patch: { tags: [Categories], summary: Patch category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Category patched } } }
+    delete: { tags: [Categories], summary: Delete category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Category deleted } } }
+  /sub-categories:
+    get:
+      tags: [Sub Categories]
+      summary: List sub categories
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Search' }]
+      responses: { '200': { description: Sub category page } }
+    post:
+      tags: [Sub Categories]
+      summary: Create sub category
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SubCategoryRequest' } } } }
+      responses: { '201': { description: Sub category created } }
+  /sub-categories/{id}:
+    get: { tags: [Sub Categories], summary: Get sub category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Sub category detail } } }
+    put: { tags: [Sub Categories], summary: Update sub category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SubCategoryRequest' } } } }, responses: { '200': { description: Sub category updated } } }
+    patch: { tags: [Sub Categories], summary: Patch sub category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SubCategoryRequest' } } } }, responses: { '200': { description: Sub category patched } } }
+    delete: { tags: [Sub Categories], summary: Delete sub category, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Sub category deleted } } }
+  /materials:
+    get:
+      tags: [Materials]
+      summary: List materials
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Search' }]
+      responses: { '200': { description: Material page } }
+    post:
+      tags: [Materials]
+      summary: Create material
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }
+      responses: { '201': { description: Material created } }
+  /materials/{id}:
+    get: { tags: [Materials], summary: Get material, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Material detail } } }
+    put: { tags: [Materials], summary: Update material, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Material updated } } }
+    patch: { tags: [Materials], summary: Patch material, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Material patched } } }
+    delete: { tags: [Materials], summary: Delete material, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Material deleted } } }
+  /colors:
+    get:
+      tags: [Colors]
+      summary: List colors
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Search' }]
+      responses: { '200': { description: Color page } }
+    post:
+      tags: [Colors]
+      summary: Create color
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }
+      responses: { '201': { description: Color created } }
+  /colors/{id}:
+    get: { tags: [Colors], summary: Get color, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Color detail } } }
+    put: { tags: [Colors], summary: Update color, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Color updated } } }
+    patch: { tags: [Colors], summary: Patch color, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MasterRequest' } } } }, responses: { '200': { description: Color patched } } }
+    delete: { tags: [Colors], summary: Delete color, parameters: [{ in: path, name: id, required: true, schema: { type: string } }], responses: { '200': { description: Color deleted } } }
+
+  /skus/{id_or_code}/options:
+    get:
+      tags: [SKU Options]
+      summary: List active option groups and option values for a SKU
+      parameters:
+        - in: path
+          name: id_or_code
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses: { '200': { description: SKU option groups } }
+    post:
+      tags: [SKU Options]
+      summary: Create an option group for a SKU, with optional values
+      parameters:
+        - in: path
+          name: id_or_code
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SKUOptionGroupRequest' }
+      responses: { '201': { description: SKU option group created } }
+  /sku-option-groups:
+    get:
+      tags: [SKU Options]
+      summary: List SKU option groups across the merchant
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - in: query
+          name: sku_id
+          schema: { type: string }
+      responses: { '200': { description: SKU option group page } }
+  /sku-option-groups/{id}:
+    get:
+      tags: [SKU Options]
+      summary: Get SKU option group details
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses: { '200': { description: SKU option group detail } }
+    put:
+      tags: [SKU Options]
+      summary: Replace SKU option group and its values
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SKUOptionGroupRequest' } } } }
+      responses: { '200': { description: SKU option group updated } }
+    patch:
+      tags: [SKU Options]
+      summary: Patch SKU option group and its values
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SKUOptionGroupRequest' } } } }
+      responses: { '200': { description: SKU option group patched } }
+    delete:
+      tags: [SKU Options]
+      summary: Delete SKU option group
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses: { '200': { description: SKU option group deleted } }
+  /sku-option-groups/{id}/options:
+    post:
+      tags: [SKU Options]
+      summary: Add an option value to an option group
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SKUOptionValueRequest' } } } }
+      responses: { '201': { description: SKU option value created } }
+  /sku-option-values/{id}:
+    put:
+      tags: [SKU Options]
+      summary: Replace SKU option value
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SKUOptionValueRequest' } } } }
+      responses: { '200': { description: SKU option value updated } }
+    patch:
+      tags: [SKU Options]
+      summary: Patch SKU option value
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SKUOptionValueRequest' } } } }
+      responses: { '200': { description: SKU option value patched } }
+    delete:
+      tags: [SKU Options]
+      summary: Delete SKU option value
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses: { '200': { description: SKU option value deleted } }
