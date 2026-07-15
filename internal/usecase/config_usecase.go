@@ -34,8 +34,6 @@ func (u *ConfigUsecase) GetMerchantFeatureConfig(auth model.AuthContext) (model.
 		Images:        item.Images,
 		Colors:        item.Colors,
 		SKUOptions:    item.SKUOptions,
-		CreatedAt:     item.CreatedAt,
-		UpdatedAt:     item.UpdatedAt,
 	}, nil
 }
 
@@ -87,7 +85,5 @@ func (u *ConfigUsecase) UpdateMerchantFeatureConfig(auth model.AuthContext, req 
 		Images:        updated.Images,
 		Colors:        updated.Colors,
 		SKUOptions:    updated.SKUOptions,
-		CreatedAt:     updated.CreatedAt,
-		UpdatedAt:     updated.UpdatedAt,
 	}, nil
 }
