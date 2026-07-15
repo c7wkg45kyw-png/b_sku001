@@ -181,7 +181,7 @@ func applyOptionGroupRequest(item *entity.SKUOptionGroup, req model.SKUOptionGro
 	item.MinSelect = req.MinSelect
 	item.MaxSelect = req.MaxSelect
 	item.SortOrder = req.SortOrder
-	item.IsActive = boolPointerDefault(req.IsActive, true)
+	item.IsActive = true
 }
 
 func optionValuesFromRequest(items []model.SKUOptionValueRequest) []entity.SKUOptionValue {
@@ -193,7 +193,7 @@ func optionValuesFromRequest(items []model.SKUOptionValueRequest) []entity.SKUOp
 }
 
 func optionValueFromRequest(req model.SKUOptionValueRequest) entity.SKUOptionValue {
-	return entity.SKUOptionValue{Code: req.Code, NameTH: req.NameTH, NameEN: req.NameEN, PriceDelta: req.PriceDelta, SortOrder: req.SortOrder, IsDefault: req.IsDefault, IsActive: boolPointerDefault(req.IsActive, true)}
+	return entity.SKUOptionValue{Code: req.Code, NameTH: req.NameTH, NameEN: req.NameEN, PriceDelta: req.PriceDelta, SortOrder: req.SortOrder, IsDefault: req.IsDefault, IsActive: true}
 }
 
 func mapOptionGroup(item entity.SKUOptionGroup, lang string) model.SKUOptionGroupResponse {

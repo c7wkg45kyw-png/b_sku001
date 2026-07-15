@@ -88,23 +88,23 @@ func (r *MasterRepository) Create(resource, merchantID, userID string, req any) 
 	switch resource {
 	case "brands":
 		payload := req.(model.MasterRequest)
-		item := entity.Brand{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: boolDefault(payload.IsActive, true)}
+		item := entity.Brand{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: true}
 		return item, r.db.Create(&item).Error
 	case "categories":
 		payload := req.(model.MasterRequest)
-		item := entity.Category{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: boolDefault(payload.IsActive, true)}
+		item := entity.Category{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: true}
 		return item, r.db.Create(&item).Error
 	case "sub-categories":
 		payload := req.(model.SubCategoryRequest)
-		item := entity.SubCategory{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, CategoryID: payload.CategoryID, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: boolDefault(payload.IsActive, true)}
+		item := entity.SubCategory{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, CategoryID: payload.CategoryID, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: true}
 		return item, r.db.Create(&item).Error
 	case "materials":
 		payload := req.(model.MasterRequest)
-		item := entity.Material{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: boolDefault(payload.IsActive, true)}
+		item := entity.Material{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, IsActive: true}
 		return item, r.db.Create(&item).Error
 	case "colors":
 		payload := req.(model.MasterRequest)
-		item := entity.Color{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, HexCode: payload.HexCode, IsActive: boolDefault(payload.IsActive, true)}
+		item := entity.Color{Base: entity.Base{MerchantID: merchantID, CreatedBy: userID, UpdatedBy: userID}, Code: payload.Code, NameTH: payload.NameTH, NameEN: payload.NameEN, HexCode: payload.HexCode, IsActive: true}
 		return item, r.db.Create(&item).Error
 	default:
 		return nil, errors.New("unknown master resource")
@@ -123,7 +123,6 @@ func (r *MasterRepository) Update(resource, merchantID, userID, id string, req a
 		current.NameTH = payload.NameTH
 		current.NameEN = payload.NameEN
 		current.UpdatedBy = userID
-		current.IsActive = boolDefault(payload.IsActive, current.IsActive)
 		err = r.db.Save(&current).Error
 		return current, err
 	case entity.Category:
@@ -132,7 +131,6 @@ func (r *MasterRepository) Update(resource, merchantID, userID, id string, req a
 		current.NameTH = payload.NameTH
 		current.NameEN = payload.NameEN
 		current.UpdatedBy = userID
-		current.IsActive = boolDefault(payload.IsActive, current.IsActive)
 		err = r.db.Save(&current).Error
 		return current, err
 	case entity.SubCategory:
@@ -142,7 +140,6 @@ func (r *MasterRepository) Update(resource, merchantID, userID, id string, req a
 		current.NameTH = payload.NameTH
 		current.NameEN = payload.NameEN
 		current.UpdatedBy = userID
-		current.IsActive = boolDefault(payload.IsActive, current.IsActive)
 		err = r.db.Save(&current).Error
 		return current, err
 	case entity.Material:
@@ -151,7 +148,6 @@ func (r *MasterRepository) Update(resource, merchantID, userID, id string, req a
 		current.NameTH = payload.NameTH
 		current.NameEN = payload.NameEN
 		current.UpdatedBy = userID
-		current.IsActive = boolDefault(payload.IsActive, current.IsActive)
 		err = r.db.Save(&current).Error
 		return current, err
 	case entity.Color:
@@ -161,7 +157,6 @@ func (r *MasterRepository) Update(resource, merchantID, userID, id string, req a
 		current.NameEN = payload.NameEN
 		current.HexCode = payload.HexCode
 		current.UpdatedBy = userID
-		current.IsActive = boolDefault(payload.IsActive, current.IsActive)
 		err = r.db.Save(&current).Error
 		return current, err
 	default:
@@ -201,10 +196,4 @@ func normalizePage(page, limit int) (int, int) {
 		limit = 100
 	}
 	return page, limit
-}
-func boolDefault(value *bool, fallback bool) bool {
-	if value == nil {
-		return fallback
-	}
-	return *value
 }

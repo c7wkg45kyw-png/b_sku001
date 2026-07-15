@@ -39,7 +39,6 @@ components:
         name_th: { type: string }
         name_en: { type: string }
         hex_code: { type: string }
-        is_active: { type: boolean }
     SubCategoryRequest:
       allOf:
         - $ref: '#/components/schemas/MasterRequest'
@@ -94,7 +93,6 @@ components:
         price_delta: { type: number, format: double, example: 0.0000 }
         sort_order: { type: integer, example: 1 }
         is_default: { type: boolean, example: true }
-        is_active: { type: boolean, example: true }
     SKUOptionGroupRequest:
       type: object
       required: [code, name_th, name_en, selection_type]
@@ -107,7 +105,6 @@ components:
         min_select: { type: integer, example: 1 }
         max_select: { type: integer, example: 1 }
         sort_order: { type: integer, example: 1 }
-        is_active: { type: boolean, example: true }
         options:
           type: array
           items: { $ref: '#/components/schemas/SKUOptionValueRequest' }
@@ -120,18 +117,15 @@ components:
       properties:
         sku_code: { type: string, example: APL-IPH15-BLK-256 }
         gtin: { type: string, example: '8851234567890' }
-        brand_id: { type: string }
-        category_id: { type: string }
-        sub_category_id: { type: string }
-        material_id: { type: string }
-        color_id: { type: string }
+        brand_id: { type: string, nullable: true }
+        category_id: { type: string, nullable: true }
+        sub_category_id: { type: string, nullable: true }
+        material_id: { type: string, nullable: true }
+        color_id: { type: string, nullable: true }
         names:
           type: object
           additionalProperties: { type: string }
           example: { en: iPhone 15 Pro Max 256GB Black, th: ไอโฟน 15 โปร แมกซ์ 256GB สีดำ }
-        descriptions:
-          type: object
-          additionalProperties: { type: string }
         weight:
           type: object
           properties:

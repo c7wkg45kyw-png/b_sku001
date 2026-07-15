@@ -7,7 +7,6 @@ type SKUOptionValueRequest struct {
 	PriceDelta float64 `json:"price_delta"`
 	SortOrder  int     `json:"sort_order"`
 	IsDefault  bool    `json:"is_default"`
-	IsActive   *bool   `json:"is_active,omitempty"`
 }
 
 type SKUOptionGroupRequest struct {
@@ -19,7 +18,6 @@ type SKUOptionGroupRequest struct {
 	MinSelect     int                     `json:"min_select"`
 	MaxSelect     int                     `json:"max_select"`
 	SortOrder     int                     `json:"sort_order"`
-	IsActive      *bool                   `json:"is_active,omitempty"`
 	Options       []SKUOptionValueRequest `json:"options"`
 }
 

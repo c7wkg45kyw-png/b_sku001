@@ -52,13 +52,12 @@ type SKUImageRequest struct {
 type SKURequest struct {
 	SKUCode         string            `json:"sku_code" binding:"required"`
 	GTIN            string            `json:"gtin"`
-	BrandID         string            `json:"brand_id"`
-	CategoryID      string            `json:"category_id"`
-	SubCategoryID   string            `json:"sub_category_id"`
-	MaterialID      string            `json:"material_id"`
-	ColorID         string            `json:"color_id"`
+	BrandID         *string           `json:"brand_id"`
+	CategoryID      *string           `json:"category_id"`
+	SubCategoryID   *string           `json:"sub_category_id"`
+	MaterialID      *string           `json:"material_id"`
+	ColorID         *string           `json:"color_id"`
 	Names           LocalizedText     `json:"names" binding:"required"`
-	Descriptions    LocalizedText     `json:"descriptions"`
 	Weight          WeightPayload     `json:"weight"`
 	Dimensions      DimensionPayload  `json:"dimensions"`
 	Status          string            `json:"status"`
@@ -76,7 +75,6 @@ type SKUPatchRequest struct {
 	MaterialID      *string           `json:"material_id"`
 	ColorID         *string           `json:"color_id"`
 	Names           LocalizedText     `json:"names"`
-	Descriptions    LocalizedText     `json:"descriptions"`
 	Weight          *WeightPayload    `json:"weight"`
 	Dimensions      *DimensionPayload `json:"dimensions"`
 	Status          *string           `json:"status"`
@@ -90,11 +88,11 @@ type SKUResponse struct {
 	MerchantID      string             `json:"merchant_id"`
 	SKUCode         string             `json:"sku_code"`
 	GTIN            string             `json:"gtin"`
-	BrandID         string             `json:"brand_id"`
-	CategoryID      string             `json:"category_id"`
-	SubCategoryID   string             `json:"sub_category_id"`
-	MaterialID      string             `json:"material_id"`
-	ColorID         string             `json:"color_id"`
+	BrandID         *string            `json:"brand_id"`
+	CategoryID      *string            `json:"category_id"`
+	SubCategoryID   *string            `json:"sub_category_id"`
+	MaterialID      *string            `json:"material_id"`
+	ColorID         *string            `json:"color_id"`
 	Names           LocalizedText      `json:"names,omitempty"`
 	Name            string             `json:"name,omitempty"`
 	Descriptions    LocalizedText      `json:"descriptions,omitempty"`

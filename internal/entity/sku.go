@@ -8,11 +8,11 @@ type SKU struct {
 	GTIN            string         `gorm:"size:80;index" json:"gtin"`
 	Names           datatypes.JSON `gorm:"type:jsonb;not null;default:'{}'" json:"names"`
 	Descriptions    datatypes.JSON `gorm:"type:jsonb;not null;default:'{}'" json:"descriptions"`
-	BrandID         string         `gorm:"size:80;index" json:"brand_id"`
-	CategoryID      string         `gorm:"type:uuid;index" json:"category_id"`
-	SubCategoryID   string         `gorm:"size:80;index" json:"sub_category_id"`
-	MaterialID      string         `gorm:"type:uuid;index" json:"material_id"`
-	ColorID         string         `gorm:"size:80;index" json:"color_id"`
+	BrandID         *string        `gorm:"size:80;index" json:"brand_id"`
+	CategoryID      *string        `gorm:"type:uuid;index" json:"category_id"`
+	SubCategoryID   *string        `gorm:"size:80;index" json:"sub_category_id"`
+	MaterialID      *string        `gorm:"type:uuid;index" json:"material_id"`
+	ColorID         *string        `gorm:"size:80;index" json:"color_id"`
 	Status          string         `gorm:"size:40;not null;default:'DRAFT';index" json:"status"`
 	IsHazmat        bool           `gorm:"not null;default:false" json:"is_hazmat"`
 	CountryOfOrigin string         `gorm:"size:2" json:"country_of_origin"`

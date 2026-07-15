@@ -37,7 +37,7 @@ func (u *SKUUsecase) Get(auth model.AuthContext, idOrCode, lang string) (model.S
 }
 
 func (u *SKUUsecase) Create(auth model.AuthContext, req model.SKURequest, lang string) (model.SKUResponse, error) {
-	item := entity.SKU{Base: entity.Base{MerchantID: auth.MerchantID, CreatedBy: auth.UserID, UpdatedBy: auth.UserID}, SKUCode: req.SKUCode, GTIN: req.GTIN, Names: jsonMap(req.Names), Descriptions: jsonMap(req.Descriptions), BrandID: req.BrandID, CategoryID: req.CategoryID, SubCategoryID: req.SubCategoryID, MaterialID: req.MaterialID, ColorID: req.ColorID, Status: statusDefault(req.Status), IsHazmat: req.IsHazmat, CountryOfOrigin: strings.ToUpper(req.CountryOfOrigin), IsActive: true}
+	item := entity.SKU{Base: entity.Base{MerchantID: auth.MerchantID, CreatedBy: auth.UserID, UpdatedBy: auth.UserID}, SKUCode: req.SKUCode, GTIN: req.GTIN, Names: jsonMap(req.Names), Descriptions: jsonMap(nil), BrandID: optionalString(req.BrandID), CategoryID: optionalString(req.CategoryID), SubCategoryID: optionalString(req.SubCategoryID), MaterialID: optionalString(req.MaterialID), ColorID: optionalString(req.ColorID), Status: statusDefault(req.Status), IsHazmat: req.IsHazmat, CountryOfOrigin: strings.ToUpper(req.CountryOfOrigin), IsActive: true}
 	dimension := dimensionFromRequest(req.Weight, req.Dimensions)
 	images := imagesFromRequest(req.Images)
 	created, err := u.repo.Create(item, dimension, images)
@@ -55,12 +55,12 @@ func (u *SKUUsecase) Replace(auth model.AuthContext, id string, req model.SKUReq
 	item.SKUCode = req.SKUCode
 	item.GTIN = req.GTIN
 	item.Names = jsonMap(req.Names)
-	item.Descriptions = jsonMap(req.Descriptions)
-	item.BrandID = req.BrandID
-	item.CategoryID = req.CategoryID
-	item.SubCategoryID = req.SubCategoryID
-	item.MaterialID = req.MaterialID
-	item.ColorID = req.ColorID
+	item.Descriptions = jsonMap(nil)
+	item.BrandID = optionalString(req.BrandID)
+	item.CategoryID = optionalString(req.CategoryID)
+	item.SubCategoryID = optionalString(req.SubCategoryID)
+	item.MaterialID = optionalString(req.MaterialID)
+	item.ColorID = optionalString(req.ColorID)
 	item.Status = statusDefault(req.Status)
 	item.IsHazmat = req.IsHazmat
 	item.CountryOfOrigin = strings.ToUpper(req.CountryOfOrigin)
@@ -86,23 +86,20 @@ func (u *SKUUsecase) Patch(auth model.AuthContext, id string, req model.SKUPatch
 	if req.Names != nil {
 		item.Names = jsonMap(req.Names)
 	}
-	if req.Descriptions != nil {
-		item.Descriptions = jsonMap(req.Descriptions)
-	}
 	if req.BrandID != nil {
-		item.BrandID = *req.BrandID
+		item.BrandID = optionalString(req.BrandID)
 	}
 	if req.CategoryID != nil {
-		item.CategoryID = *req.CategoryID
+		item.CategoryID = optionalString(req.CategoryID)
 	}
 	if req.SubCategoryID != nil {
-		item.SubCategoryID = *req.SubCategoryID
+		item.SubCategoryID = optionalString(req.SubCategoryID)
 	}
 	if req.MaterialID != nil {
-		item.MaterialID = *req.MaterialID
+		item.MaterialID = optionalString(req.MaterialID)
 	}
 	if req.ColorID != nil {
-		item.ColorID = *req.ColorID
+		item.ColorID = optionalString(req.ColorID)
 	}
 	if req.Status != nil {
 		item.Status = statusDefault(*req.Status)
@@ -134,6 +131,14 @@ func (u *SKUUsecase) Patch(auth model.AuthContext, id string, req model.SKUPatch
 
 func (u *SKUUsecase) Delete(auth model.AuthContext, id string) error {
 	return u.repo.SoftDelete(auth.MerchantID, id)
+}
+
+func optionalString(value *string) *string {
+	if value == nil || strings.TrimSpace(*value) == "" {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*value)
+	return &trimmed
 }
 
 func jsonMap(value map[string]string) datatypes.JSON {
